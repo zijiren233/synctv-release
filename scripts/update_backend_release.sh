@@ -6,6 +6,7 @@ required_environment=(
   GITHUB_REPOSITORY
   BACKEND_REPOSITORY
   BACKEND_TAG
+  BACKEND_DOCS_URL
   APP_REPOSITORY
   APP_TAG
   APP_VERSION
@@ -31,7 +32,9 @@ ruby script/release-notes \
   --backend-file "$tmp_dir/backend.md" \
   --app-file "$tmp_dir/app.md" \
   --output "$tmp_dir/merged.md" \
+  --backend-repository "$BACKEND_REPOSITORY" \
   --backend-tag "$BACKEND_TAG" \
+  --backend-docs-url "$BACKEND_DOCS_URL" \
   --app-repository "$APP_REPOSITORY" \
   --app-tag "$APP_TAG" \
   --app-version "$APP_VERSION" \
@@ -43,5 +46,5 @@ gh release edit "$BACKEND_TAG" \
   --repo "$BACKEND_REPOSITORY" \
   --notes-file "$tmp_dir/merged.md"
 
-printf 'Updated %s Release %s with App %s downloads.\n' \
+printf 'Updated %s Release %s with App %s downloads and server deployment guides.\n' \
   "$BACKEND_REPOSITORY" "$BACKEND_TAG" "$APP_TAG"

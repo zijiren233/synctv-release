@@ -194,6 +194,7 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
           BACKEND_REPOSITORY: ${{ steps.manifest.outputs.backend_repository }}
           BACKEND_TAG: ${{ steps.manifest.outputs.backend_tag }}
+          BACKEND_DOCS_URL: https://docs.syncs.tv
           APP_REPOSITORY: ${{ steps.manifest.outputs.app_repository }}
           APP_TAG: ${{ steps.manifest.outputs.app_tag }}
           APP_VERSION: ${{ steps.manifest.outputs.app_version }}

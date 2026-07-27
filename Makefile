@@ -9,6 +9,7 @@ validate: test manifests shellcheck
 
 test:
 	ruby -Itest test/release_manifest_test.rb
+	ruby -Itest test/release_notes_test.rb
 
 manifests:
 	ruby script/manifest validate examples/release.yml
@@ -20,4 +21,3 @@ shellcheck:
 
 actionlint:
 	go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
-

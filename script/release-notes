@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "optparse"
+require_relative "../lib/release_notes"
+
+options = {}
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: script/release-notes [options]"
+  opts.on("--backend-file PATH") { |value| options[:backend_file] = value }
+  opts.on("--app-file PATH") { |value| options[:app_file] = value }
+  opts.on("--output PATH") { |value| options[:output] = value }
+  opts.on("--backend-tag TAG") { |value| options[:backend_tag] = value }
+  opts.on("--app-repository OWNER/REPO") { |value| options[:app_repository] = value }
+  opts.on("--app-tag TAG") { |value| options[:app_tag] = value }
+  opts.on("--app-version VERSION") { |value| options[:app_version] = value }
+  opts.on("--app-build-number NUMBER", Integer) { |value| options[:app_build_number] = value }
+  opts.on("--suite-repository OWNER/REPO") { |value| options[:suite_repository] = value }
+  opts.on("--suite-tag TAG") { |value| options[:suite_tag] = value }
+end
+
+parser.parse!
+missing = %i[
+  backend_file app_file output backend_tag app_repository app_tag app_version
+  app_build_number suite_repository suite_tag
+].reject { |key| options.key?(key) }
+abort "Missing options: #{missing.join(', ')}\n#{parser}" unless missing.empty?
+
+merged = ReleaseNotes.merge(
+  backend_body: File.read(options.fetch(:backend_file)),
+  app_body: File.read(options.fetch(:app_file)),
+  backend_tag: options.fetch(:backend_tag),
+  app_repository: options.fetch(:app_repository),
+  app_tag: options.fetch(:app_tag),
+  app_version: options.fetch(:app_version),
+  app_build_number: options.fetch(:app_build_number),
+  suite_repository: options.fetch(:suite_repository),
+  suite_tag: options.fetch(:suite_tag)
+)
+File.write(options.fetch(:output), merged)

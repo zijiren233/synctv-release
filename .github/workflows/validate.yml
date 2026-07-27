@@ -1,0 +1,72 @@
+name: Validate release manifests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run tests and validate manifests
+        run: make validate
+
+      - name: Validate release manifest change
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: scripts/check_release_changes.sh "$BASE_SHA" HEAD
+
+      - name: Select release manifest for preflight
+        if: github.event_name == 'pull_request'
+        id: selected
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          manifest="$(
+            git diff --diff-filter=A --name-only "$BASE_SHA...HEAD" -- \
+              'releases/*.yml' 'releases/*.yaml' | head -n 1
+          )"
+          if [[ -n "$manifest" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read release manifest for preflight
+        if: steps.selected.outputs.present == 'true'
+        id: manifest
+        run: ruby script/manifest github-output "${{ steps.selected.outputs.manifest }}"
+
+      - name: Preflight component commits and versions
+        if: steps.selected.outputs.present == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BACKEND_REPOSITORY: ${{ steps.manifest.outputs.backend_repository }}
+          BACKEND_COMMIT: ${{ steps.manifest.outputs.backend_commit }}
+          BACKEND_VERSION: ${{ steps.manifest.outputs.backend_version }}
+          BACKEND_TAG: ${{ steps.manifest.outputs.backend_tag }}
+          APP_REPOSITORY: ${{ steps.manifest.outputs.app_repository }}
+          APP_COMMIT: ${{ steps.manifest.outputs.app_commit }}
+          APP_VERSION: ${{ steps.manifest.outputs.app_version }}
+          APP_BUILD_NUMBER: ${{ steps.manifest.outputs.app_build_number }}
+          APP_TAG: ${{ steps.manifest.outputs.app_tag }}
+        run: scripts/preflight.sh
+
+      - name: Validate GitHub Actions workflows
+        run: make actionlint

@@ -1,0 +1,70 @@
+# frozen_string_literal: true
+
+require "optparse"
+require "yaml"
+require_relative "../lib/release_manifest"
+
+command = ARGV.shift
+path = ARGV.shift
+abort "usage: ruby script/manifest <validate|github-output|lock> MANIFEST [OUTPUT]" unless command && path
+
+manifest = ReleaseManifest.load(path)
+if path.match?(%r{(?:\A|/)releases/})
+  expected_name = "#{manifest.output_values.fetch("suite_version")}#{File.extname(path)}"
+  abort "release manifest must be named #{expected_name}" unless File.basename(path) == expected_name
+end
+
+case command
+when "validate"
+  puts "Validated #{path}"
+when "github-output"
+  output_path = ENV.fetch("GITHUB_OUTPUT")
+  File.open(output_path, "a") do |file|
+    manifest.output_values.each { |key, value| file.puts "#{key}=#{value}" }
+  end
+when "lock"
+  output_path = ARGV.shift || abort("lock requires an output path")
+  digest = ENV.fetch("BACKEND_IMAGE_DIGEST")
+  source_repository = ENV.fetch("GITHUB_REPOSITORY")
+  source_commit = ENV.fetch("RELEASE_SOURCE_SHA") { ENV.fetch("GITHUB_SHA") }
+  released_at = ENV.fetch("RELEASED_AT")
+  values = manifest.output_values
+
+  lock = {
+    "schema_version" => 1,
+    "release" => {
+      "version" => values.fetch("suite_version"),
+      "tag" => values.fetch("suite_tag"),
+      "channel" => values.fetch("release_channel"),
+      "released_at" => released_at,
+      "source" => "https://github.com/#{source_repository}/commit/#{source_commit}"
+    },
+    "components" => {
+      "backend" => {
+        "repository" => values.fetch("backend_repository"),
+        "commit" => values.fetch("backend_commit"),
+        "version" => values.fetch("backend_version"),
+        "tag" => values.fetch("backend_tag"),
+        "release" => "https://github.com/#{values.fetch("backend_repository")}/releases/tag/#{values.fetch("backend_tag")}",
+        "image" => "#{values.fetch("backend_image")}@#{digest}",
+        "chart" => {
+          "repository" => values.fetch("backend_chart"),
+          "version" => values.fetch("backend_version")
+        }
+      },
+      "app" => {
+        "repository" => values.fetch("app_repository"),
+        "commit" => values.fetch("app_commit"),
+        "version" => values.fetch("app_version"),
+        "build_number" => values.fetch("app_build_number"),
+        "tag" => values.fetch("app_tag"),
+        "release" => "https://github.com/#{values.fetch("app_repository")}/releases/tag/#{values.fetch("app_tag")}",
+        "checksums" => "https://github.com/#{values.fetch("app_repository")}/releases/download/#{values.fetch("app_tag")}/SHA256SUMS.txt"
+      }
+    }
+  }
+
+  File.write(output_path, YAML.dump(lock))
+else
+  abort "unknown command: #{command}"
+end

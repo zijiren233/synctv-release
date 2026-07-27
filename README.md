@@ -20,6 +20,7 @@ flowchart LR
   A --> AA["Signed app artifacts and Release"]
   AA --> L["Resolve image digest and write release lock"]
   L --> R["Publish suite Release"]
+  R --> N["Add app downloads to server Release"]
 ```
 
 A release is authorized by adding exactly one immutable manifest under
@@ -43,7 +44,8 @@ make validate
 
 The workflow produces three public records:
 
-- Server Release, container image digest, and Helm chart.
+- Server Release with app quick downloads, server changes, container image
+  digest, and Helm chart.
 - App Release and its platform artifacts.
 - Suite Release containing the resolved lock and links to both components.
 

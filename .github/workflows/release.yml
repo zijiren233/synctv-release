@@ -188,3 +188,15 @@ jobs:
           APP_TAG: ${{ steps.manifest.outputs.app_tag }}
           RELEASE_SOURCE_SHA: ${{ steps.selected.outputs.source_commit }}
         run: scripts/publish_suite_release.sh dist
+
+      - name: Add app downloads to server Release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
+          BACKEND_REPOSITORY: ${{ steps.manifest.outputs.backend_repository }}
+          BACKEND_TAG: ${{ steps.manifest.outputs.backend_tag }}
+          APP_REPOSITORY: ${{ steps.manifest.outputs.app_repository }}
+          APP_TAG: ${{ steps.manifest.outputs.app_tag }}
+          APP_VERSION: ${{ steps.manifest.outputs.app_version }}
+          APP_BUILD_NUMBER: ${{ steps.manifest.outputs.app_build_number }}
+          SUITE_TAG: ${{ steps.manifest.outputs.suite_tag }}
+        run: scripts/update_backend_release.sh

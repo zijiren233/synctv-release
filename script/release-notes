@@ -10,7 +10,9 @@ parser = OptionParser.new do |opts|
   opts.on("--backend-file PATH") { |value| options[:backend_file] = value }
   opts.on("--app-file PATH") { |value| options[:app_file] = value }
   opts.on("--output PATH") { |value| options[:output] = value }
+  opts.on("--backend-repository OWNER/REPO") { |value| options[:backend_repository] = value }
   opts.on("--backend-tag TAG") { |value| options[:backend_tag] = value }
+  opts.on("--backend-docs-url URL") { |value| options[:backend_docs_url] = value }
   opts.on("--app-repository OWNER/REPO") { |value| options[:app_repository] = value }
   opts.on("--app-tag TAG") { |value| options[:app_tag] = value }
   opts.on("--app-version VERSION") { |value| options[:app_version] = value }
@@ -21,7 +23,7 @@ end
 
 parser.parse!
 missing = %i[
-  backend_file app_file output backend_tag app_repository app_tag app_version
+  backend_file app_file output backend_repository backend_tag backend_docs_url app_repository app_tag app_version
   app_build_number suite_repository suite_tag
 ].reject { |key| options.key?(key) }
 abort "Missing options: #{missing.join(', ')}\n#{parser}" unless missing.empty?
@@ -29,7 +31,9 @@ abort "Missing options: #{missing.join(', ')}\n#{parser}" unless missing.empty?
 merged = ReleaseNotes.merge(
   backend_body: File.read(options.fetch(:backend_file)),
   app_body: File.read(options.fetch(:app_file)),
+  backend_repository: options.fetch(:backend_repository),
   backend_tag: options.fetch(:backend_tag),
+  backend_docs_url: options.fetch(:backend_docs_url),
   app_repository: options.fetch(:app_repository),
   app_tag: options.fetch(:app_tag),
   app_version: options.fetch(:app_version),

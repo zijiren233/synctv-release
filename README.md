@@ -44,8 +44,8 @@ make validate
 
 The workflow produces three public records:
 
-- Server Release with app quick downloads, server changes, container image
-  digest, and Helm chart.
+- Server Release with app quick downloads, deployment documentation, server
+  changes, container image digest, and Helm chart.
 - App Release and its platform artifacts.
 - Suite Release containing the resolved lock and links to both components.
 

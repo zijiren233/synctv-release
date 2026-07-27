@@ -6,13 +6,15 @@ class ReleaseNotes
   MANAGED_START = "<!-- synctv-suite-app:start -->"
   MANAGED_END = "<!-- synctv-suite-app:end -->"
 
-  def self.merge(backend_body:, app_body:, backend_tag:, app_repository:, app_tag:,
-                 app_version:, app_build_number:, suite_repository:, suite_tag:)
+  def self.merge(backend_body:, app_body:, backend_repository:, backend_tag:, backend_docs_url:,
+                 app_repository:, app_tag:, app_version:, app_build_number:, suite_repository:, suite_tag:)
     downloads = demote_headings(extract_app_downloads(app_body))
     server_notes = remove_managed_block(backend_body).strip
 
     app_release_url = "https://github.com/#{app_repository}/releases/tag/#{app_tag}"
     suite_release_url = "https://github.com/#{suite_repository}/releases/tag/#{suite_tag}"
+    versioned_docs_url = "https://github.com/#{backend_repository}/tree/#{backend_tag}/docs"
+    docs_url = backend_docs_url.sub(%r{/+\z}, "")
     app_artifact_version = "v#{app_version}+#{app_build_number}"
 
     managed_block = <<~MARKDOWN.strip
@@ -24,6 +26,16 @@ class ReleaseNotes
       > [View complete App release](#{app_release_url}) · [View suite release](#{suite_release_url})
 
       #{downloads}
+
+      ## Deploy SyncTV Server
+
+      | Environment | Documentation |
+      |:---|:---|
+      | **Docker Compose** | [Install on a server, NAS, or VM](#{docs_url}/install/quick-start/) |
+      | **Helm / Kubernetes** | [Install in a Kubernetes cluster](#{docs_url}/install/helm/) |
+      | **Existing installation** | [Upgrade and migration guide](#{docs_url}/operations/upgrades/) |
+
+      [Browse documentation for SyncTV Server `#{backend_tag}`](#{versioned_docs_url})
 
       ---
 

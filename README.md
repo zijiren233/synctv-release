@@ -57,6 +57,12 @@ repository secrets:
 | --- | --- |
 | `RELEASE_APP_ID` | GitHub App ID |
 | `RELEASE_APP_PRIVATE_KEY` | GitHub App private key |
+| `RELEASE_TOKEN` | Bootstrap PAT fallback with repository and workflow access |
+
+The workflow prefers the GitHub App installation token. `RELEASE_TOKEN`
+supports initial setup and release testing before the GitHub App credentials
+are configured. Store it as a repository secret and rotate or remove it after
+the GitHub App is active.
 
 Create a `release` GitHub Environment for optional approval and restrict
 deployment to `main`. Component signing and store credentials remain in their
@@ -65,4 +71,3 @@ own repositories.
 See [the runbook](docs/runbook.md) for retries and recovery, and
 [ADR-0001](docs/decisions/0001-release-orchestration.md) for the production
 patterns behind this design.
-

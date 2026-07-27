@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     environment: release
+    env:
+      RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
     steps:
       - name: Check out release repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -74,6 +76,7 @@ jobs:
 
       - name: Create cross-repository installation token
         id: app-token
+        if: ${{ env.RELEASE_APP_ID != '' }}
         uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
           app-id: ${{ secrets.RELEASE_APP_ID }}
@@ -86,7 +89,7 @@ jobs:
 
       - name: Preflight component commits and versions
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
           BACKEND_REPOSITORY: ${{ steps.manifest.outputs.backend_repository }}
           BACKEND_COMMIT: ${{ steps.manifest.outputs.backend_commit }}
           BACKEND_VERSION: ${{ steps.manifest.outputs.backend_version }}
@@ -100,7 +103,7 @@ jobs:
 
       - name: Create server release tag
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
         run: >-
           scripts/create_component_tag.sh
           "${{ steps.manifest.outputs.backend_repository }}"
@@ -110,7 +113,7 @@ jobs:
 
       - name: Wait for server Release
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
         run: >-
           scripts/wait_for_workflow.sh
           "${{ steps.manifest.outputs.backend_repository }}"
@@ -120,7 +123,7 @@ jobs:
 
       - name: Wait for server image
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
         run: >-
           scripts/wait_for_workflow.sh
           "${{ steps.manifest.outputs.backend_repository }}"
@@ -140,7 +143,7 @@ jobs:
 
       - name: Create app release tag
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
         run: >-
           scripts/create_component_tag.sh
           "${{ steps.manifest.outputs.app_repository }}"
@@ -150,7 +153,7 @@ jobs:
 
       - name: Wait for app Release
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
         run: >-
           scripts/wait_for_workflow.sh
           "${{ steps.manifest.outputs.app_repository }}"
@@ -171,7 +174,7 @@ jobs:
 
       - name: Publish suite Release
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
           SUITE_VERSION: ${{ steps.manifest.outputs.suite_version }}
           SUITE_TAG: ${{ steps.manifest.outputs.suite_tag }}
           RELEASE_CHANNEL: ${{ steps.manifest.outputs.release_channel }}

@@ -49,6 +49,11 @@ verify_tag "$APP_REPOSITORY" "$APP_TAG" "$APP_COMMIT"
 
 download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" Cargo.toml "$tmp_dir/Cargo.toml"
 download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" helm/synctv/Chart.yaml "$tmp_dir/Chart.yaml"
+download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" docs/package.json "$tmp_dir/package.json"
+download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" docs/package-lock.json "$tmp_dir/package-lock.json"
+download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" docs/src/lib/project.ts "$tmp_dir/project.ts"
+download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" docker-compose.yml "$tmp_dir/docker-compose.yml"
+download_file "$BACKEND_REPOSITORY" "$BACKEND_COMMIT" helm/synctv/README.md "$tmp_dir/helm-readme.md"
 download_file "$APP_REPOSITORY" "$APP_COMMIT" pubspec.yaml "$tmp_dir/pubspec.yaml"
 
 cargo_version="$(ruby -e '
@@ -59,11 +64,28 @@ cargo_version="$(ruby -e '
 ' "$tmp_dir/Cargo.toml")"
 chart_version="$(ruby -ryaml -e 'puts YAML.load_file(ARGV.fetch(0)).fetch("version")' "$tmp_dir/Chart.yaml")"
 chart_app_version="$(ruby -ryaml -e 'puts YAML.load_file(ARGV.fetch(0)).fetch("appVersion")' "$tmp_dir/Chart.yaml")"
+docs_package_version="$(ruby -rjson -e 'puts JSON.parse(File.read(ARGV.fetch(0))).fetch("version")' "$tmp_dir/package.json")"
+docs_lock_version="$(ruby -rjson -e 'puts JSON.parse(File.read(ARGV.fetch(0))).fetch("version")' "$tmp_dir/package-lock.json")"
+docs_lock_root_version="$(ruby -rjson -e 'puts JSON.parse(File.read(ARGV.fetch(0))).fetch("packages").fetch("").fetch("version")' "$tmp_dir/package-lock.json")"
+docs_default_app_version="$(sed -n "s/^[[:space:]]*const defaultAppVersion = ['\"]\([^'\"]*\)['\"];.*$/\1/p" "$tmp_dir/project.ts" | head -n 1)"
+compose_image_tag="$(ruby -ryaml -e '
+  image = YAML.load_file(ARGV.fetch(0)).fetch("services").fetch("synctv").fetch("image")
+  match = image.match(/\$\{SYNCTV_IMAGE_TAG:-([^}]+)\}/)
+  abort "docker-compose.yml synctv image must use SYNCTV_IMAGE_TAG fallback" unless match
+  puts match[1]
+' "$tmp_dir/docker-compose.yml")"
+helm_readme_version="$(sed -n 's/^[[:space:]]*--version[[:space:]]*\([^[:space:]]*\).*$/\1/p' "$tmp_dir/helm-readme.md" | head -n 1)"
 app_artifact_version="$(sed -n 's/^version:[[:space:]]*//p' "$tmp_dir/pubspec.yaml" | head -n 1 | tr -d '\r')"
 
 [[ "$cargo_version" == "$BACKEND_VERSION" ]] || { printf 'Cargo version %s differs from %s.\n' "$cargo_version" "$BACKEND_VERSION" >&2; exit 1; }
 [[ "$chart_version" == "$BACKEND_VERSION" ]] || { printf 'Chart version %s differs from %s.\n' "$chart_version" "$BACKEND_VERSION" >&2; exit 1; }
 [[ "$chart_app_version" == "$BACKEND_VERSION" ]] || { printf 'Chart appVersion %s differs from %s.\n' "$chart_app_version" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$docs_package_version" == "$BACKEND_VERSION" ]] || { printf 'Docs package version %s differs from %s.\n' "$docs_package_version" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$docs_lock_version" == "$BACKEND_VERSION" ]] || { printf 'Docs lock version %s differs from %s.\n' "$docs_lock_version" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$docs_lock_root_version" == "$BACKEND_VERSION" ]] || { printf 'Docs lock root version %s differs from %s.\n' "$docs_lock_root_version" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$docs_default_app_version" == "$BACKEND_VERSION" ]] || { printf 'Docs default app version %s differs from %s.\n' "$docs_default_app_version" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$compose_image_tag" == "$BACKEND_VERSION" ]] || { printf 'Compose image fallback %s differs from %s.\n' "$compose_image_tag" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$helm_readme_version" == "$BACKEND_VERSION" ]] || { printf 'Helm README version %s differs from %s.\n' "$helm_readme_version" "$BACKEND_VERSION" >&2; exit 1; }
 [[ "$app_artifact_version" == "$APP_VERSION+$APP_BUILD_NUMBER" ]] || {
   printf 'App version %s differs from %s+%s.\n' "$app_artifact_version" "$APP_VERSION" "$APP_BUILD_NUMBER" >&2
   exit 1

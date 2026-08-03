@@ -84,7 +84,7 @@ app_artifact_version="$(sed -n 's/^version:[[:space:]]*//p' "$tmp_dir/pubspec.ya
 [[ "$docs_lock_version" == "$BACKEND_VERSION" ]] || { printf 'Docs lock version %s differs from %s.\n' "$docs_lock_version" "$BACKEND_VERSION" >&2; exit 1; }
 [[ "$docs_lock_root_version" == "$BACKEND_VERSION" ]] || { printf 'Docs lock root version %s differs from %s.\n' "$docs_lock_root_version" "$BACKEND_VERSION" >&2; exit 1; }
 [[ "$docs_default_app_version" == "$BACKEND_VERSION" ]] || { printf 'Docs default app version %s differs from %s.\n' "$docs_default_app_version" "$BACKEND_VERSION" >&2; exit 1; }
-[[ "$compose_image_tag" == "$BACKEND_VERSION" ]] || { printf 'Compose image fallback %s differs from %s.\n' "$compose_image_tag" "$BACKEND_VERSION" >&2; exit 1; }
+[[ "$compose_image_tag" == "latest" ]] || { printf 'Compose image fallback %s must equal latest.\n' "$compose_image_tag" >&2; exit 1; }
 [[ "$helm_readme_version" == "$BACKEND_VERSION" ]] || { printf 'Helm README version %s differs from %s.\n' "$helm_readme_version" "$BACKEND_VERSION" >&2; exit 1; }
 [[ "$app_artifact_version" == "$APP_VERSION+$APP_BUILD_NUMBER" ]] || {
   printf 'App version %s differs from %s+%s.\n' "$app_artifact_version" "$APP_VERSION" "$APP_BUILD_NUMBER" >&2

@@ -1,0 +1,21 @@
+schema_version: 1
+
+release:
+  version: "2026.08.1"
+  channel: prerelease
+
+components:
+  backend:
+    repository: zijiren233/synctv
+    commit: 25587219ea46e047e5426629dfe6941897aab2b7
+    version: 1.0.2-rc.6
+    tag: v1.0.2-rc.6
+    image: ghcr.io/zijiren233/synctv
+    chart: oci://ghcr.io/zijiren233/synctv/charts/synctv
+
+  app:
+    repository: zijiren233/synctv-app
+    commit: 85c4bd4b5ba2919136cdbdc5a230bdce05d24654
+    version: 1.1.8
+    build_number: 6
+    tag: v1.1.8

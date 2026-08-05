@@ -101,15 +101,33 @@ jobs:
           APP_TAG: ${{ steps.manifest.outputs.app_tag }}
         run: scripts/preflight.sh
 
-      - name: Create server release tag
+      - name: Create component release tags
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
-        run: >-
-          scripts/create_component_tag.sh
-          "${{ steps.manifest.outputs.backend_repository }}"
-          "${{ steps.manifest.outputs.backend_tag }}"
-          "${{ steps.manifest.outputs.backend_commit }}"
-          "${{ steps.manifest.outputs.suite_version }}"
+        run: |
+          scripts/create_component_tag.sh \
+            "${{ steps.manifest.outputs.backend_repository }}" \
+            "${{ steps.manifest.outputs.backend_tag }}" \
+            "${{ steps.manifest.outputs.backend_commit }}" \
+            "${{ steps.manifest.outputs.suite_version }}" &
+          backend_pid=$!
+
+          scripts/create_component_tag.sh \
+            "${{ steps.manifest.outputs.app_repository }}" \
+            "${{ steps.manifest.outputs.app_tag }}" \
+            "${{ steps.manifest.outputs.app_commit }}" \
+            "${{ steps.manifest.outputs.suite_version }}" &
+          app_pid=$!
+
+          backend_status=0
+          app_status=0
+          wait "$backend_pid" || backend_status=$?
+          wait "$app_pid" || app_status=$?
+          if ((backend_status != 0 || app_status != 0)); then
+            printf 'Tag creation failed: backend=%s app=%s\n' \
+              "$backend_status" "$app_status" >&2
+            exit 1
+          fi
 
       - name: Wait for server Release
         env:
@@ -140,16 +158,6 @@ jobs:
           scripts/resolve_image_digest.sh "$IMAGE:$VERSION" > image-digest.txt
           read -r digest < image-digest.txt
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
-
-      - name: Create app release tag
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
-        run: >-
-          scripts/create_component_tag.sh
-          "${{ steps.manifest.outputs.app_repository }}"
-          "${{ steps.manifest.outputs.app_tag }}"
-          "${{ steps.manifest.outputs.app_commit }}"
-          "${{ steps.manifest.outputs.suite_version }}"
 
       - name: Wait for app Release
         env:

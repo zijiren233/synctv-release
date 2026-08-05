@@ -15,10 +15,11 @@ flowchart LR
   P["Release manifest PR"] --> V["Validate exact commits and versions"]
   V --> M["Merge to main"]
   M --> B["Tag server repository"]
+  M --> A["Tag app repository"]
   B --> BA["Server image, chart, and Release"]
-  BA --> A["Tag app repository"]
   A --> AA["Signed app artifacts and Release"]
-  AA --> L["Resolve image digest and write release lock"]
+  BA --> L["Resolve image digest and write release lock"]
+  AA --> L
   L --> R["Publish suite Release"]
   R --> N["Add app downloads to server Release"]
 ```

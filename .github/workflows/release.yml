@@ -46,10 +46,17 @@ jobs:
           if [[ -n "$DISPATCH_MANIFEST" ]]; then
             manifest="$DISPATCH_MANIFEST"
           else
-            mapfile -t manifests < <(
-              git diff --diff-filter=A --name-only "$BEFORE_SHA" "$GITHUB_SHA" -- \
-                'releases/*.yml' 'releases/*.yaml'
-            )
+            if [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+              mapfile -t manifests < <(
+                git diff-tree --root --no-commit-id --diff-filter=A --name-only -r \
+                  "$GITHUB_SHA" -- 'releases/*.yml' 'releases/*.yaml'
+              )
+            else
+              mapfile -t manifests < <(
+                git diff --diff-filter=A --name-only "$BEFORE_SHA" "$GITHUB_SHA" -- \
+                  'releases/*.yml' 'releases/*.yaml'
+              )
+            fi
             if [[ "${#manifests[@]}" -ne 1 ]]; then
               echo "Expected one added release manifest, found ${#manifests[@]}." >&2
               exit 1

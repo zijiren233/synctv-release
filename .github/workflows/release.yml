@@ -156,19 +156,22 @@ jobs:
           "${{ steps.manifest.outputs.backend_tag }}"
           "${{ steps.manifest.outputs.backend_commit }}"
 
-      - name: Log in to GHCR for image resolution
-        env:
-          GHCR_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
-        run: echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_REPOSITORY_OWNER" --password-stdin
-
-      - name: Resolve immutable server image
+      - name: Read published server image digest
         id: image
         env:
-          IMAGE: ${{ steps.manifest.outputs.backend_image }}
-          VERSION: ${{ steps.manifest.outputs.backend_version }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
+          BACKEND_REPOSITORY: ${{ steps.manifest.outputs.backend_repository }}
+          BACKEND_TAG: ${{ steps.manifest.outputs.backend_tag }}
         run: |
-          scripts/resolve_image_digest.sh "$IMAGE:$VERSION" > image-digest.txt
-          read -r digest < image-digest.txt
+          gh release download "$BACKEND_TAG" \
+            --repo "$BACKEND_REPOSITORY" \
+            --pattern image-digest.txt \
+            --output image-digest.txt
+          digest="$(tr -d '[:space:]' < image-digest.txt)"
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+            echo "Backend release published an invalid image digest: $digest" >&2
+            exit 1
+          }
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
       - name: Wait for app Release

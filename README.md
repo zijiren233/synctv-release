@@ -12,8 +12,8 @@ orchestration, immutable artifact resolution, and the final suite Release.
 
 ```mermaid
 flowchart LR
-  P["Release manifest PR"] --> V["Validate exact commits and versions"]
-  V --> M["Merge to main"]
+  P["Release manifest commit"] --> V["Validate exact commits and versions"]
+  V --> M["Push to main"]
   M --> B["Tag server repository"]
   M --> A["Tag app repository"]
   B --> BA["Server image, chart, and Release"]
@@ -34,8 +34,8 @@ suite Release record. It performs no Rust or Flutter compilation.
 1. Copy `examples/release.yml` to `releases/YYYY.MM.PATCH.yml`.
 2. Set each component to a full 40-character commit SHA.
 3. Set versions and tags to the metadata already committed at those SHAs.
-4. Open a pull request and wait for `Validate release manifests`.
-5. Merge the pull request to authorize promotion.
+4. Commit the manifest directly to `main` and wait for `Validate release manifests`.
+5. Approve the `release` Environment when approval is configured.
 
 Run the same validation locally:
 

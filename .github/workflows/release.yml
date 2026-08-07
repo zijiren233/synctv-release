@@ -156,6 +156,11 @@ jobs:
           "${{ steps.manifest.outputs.backend_tag }}"
           "${{ steps.manifest.outputs.backend_commit }}"
 
+      - name: Log in to GHCR for image resolution
+        env:
+          GHCR_TOKEN: ${{ steps.app-token.outputs.token || secrets.RELEASE_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_REPOSITORY_OWNER" --password-stdin
+
       - name: Resolve immutable server image
         id: image
         env:

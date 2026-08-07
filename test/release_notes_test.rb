@@ -29,14 +29,14 @@ class ReleaseNotesTest < Minitest::Test
     ReleaseNotes.merge(
       backend_body: backend_body,
       app_body: app_body,
-      backend_repository: "zijiren233/synctv",
+      backend_repository: "synctv-org/synctv",
       backend_tag: "v1.0.1-rc.1",
       backend_docs_url: "https://docs.syncs.tv/",
-      app_repository: "zijiren233/synctv-app",
+      app_repository: "synctv-org/synctv-app",
       app_tag: "v1.1.1-rc.1",
       app_version: "1.1.1-rc.1",
       app_build_number: 8,
-      suite_repository: "zijiren233/synctv-release",
+      suite_repository: "synctv-org/synctv-release",
       suite_tag: "v2026.07.1"
     )
   end
@@ -57,8 +57,8 @@ class ReleaseNotesTest < Minitest::Test
 
     assert_includes result, "SyncTV App `v1.1.1-rc.1+8`"
     assert_includes result, "SyncTV Server `v1.0.1-rc.1`"
-    assert_includes result, "https://github.com/zijiren233/synctv-app/releases/tag/v1.1.1-rc.1"
-    assert_includes result, "https://github.com/zijiren233/synctv-release/releases/tag/v2026.07.1"
+    assert_includes result, "https://github.com/synctv-org/synctv-app/releases/tag/v1.1.1-rc.1"
+    assert_includes result, "https://github.com/synctv-org/synctv-release/releases/tag/v2026.07.1"
   end
 
   def test_adds_server_deployment_and_versioned_documentation_links
@@ -68,7 +68,7 @@ class ReleaseNotesTest < Minitest::Test
     assert_includes result, "https://docs.syncs.tv/install/quick-start/"
     assert_includes result, "https://docs.syncs.tv/install/helm/"
     assert_includes result, "https://docs.syncs.tv/operations/upgrades/"
-    assert_includes result, "https://github.com/zijiren233/synctv/tree/v1.0.1-rc.1/docs"
+    assert_includes result, "https://github.com/synctv-org/synctv/tree/v1.0.1-rc.1/docs"
   end
 
   def test_prefers_explicit_app_markers

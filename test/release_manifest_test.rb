@@ -12,15 +12,15 @@ class ReleaseManifestTest < Minitest::Test
       "release" => { "version" => "2026.08.0", "channel" => "stable" },
       "components" => {
         "backend" => {
-          "repository" => "zijiren233/synctv",
+          "repository" => "synctv-org/synctv",
           "commit" => "a" * 40,
           "version" => "1.0.1",
           "tag" => "v1.0.1",
-          "image" => "ghcr.io/zijiren233/synctv",
-          "chart" => "oci://ghcr.io/zijiren233/synctv/charts/synctv"
+          "image" => "ghcr.io/synctv-org/synctv",
+          "chart" => "oci://ghcr.io/synctv-org/synctv/charts/synctv"
         },
         "app" => {
-          "repository" => "zijiren233/synctv-app",
+          "repository" => "synctv-org/synctv-app",
           "commit" => "b" * 40,
           "version" => "1.1.1",
           "build_number" => 8,

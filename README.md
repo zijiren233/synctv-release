@@ -1,8 +1,8 @@
 # SyncTV Release
 
 This repository coordinates tested releases across
-[`zijiren233/synctv`](https://github.com/zijiren233/synctv) and
-[`zijiren233/synctv-app`](https://github.com/zijiren233/synctv-app).
+[`synctv-org/synctv`](https://github.com/synctv-org/synctv) and
+[`synctv-org/synctv-app`](https://github.com/synctv-org/synctv-app).
 
 Each component repository owns its build, signing, package publication, and
 GitHub Release. This repository owns release intent, cross-repository

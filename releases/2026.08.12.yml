@@ -7,7 +7,7 @@ release:
 components:
   backend:
     repository: synctv-org/synctv
-    commit: e2f53b50f5cb7b21faaf9b80b64d5f02728893cd
+    commit: 5425eaf43612fa8108e84db25198d4cac855a9f6
     version: 1.0.0
     tag: v1.0.0
     image: ghcr.io/synctv-org/synctv
